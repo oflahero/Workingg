@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      #map-canvas { height: 300px }
+	  
+	  body
+		{
+			font-family:arial; /* Font */
+			font-size:12px; /* Font Size */
+		}
+    </style>
+    <!--<script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByYBMmW3T17IrBrRZRnd6kIMxGzGdhZ2c&sensor=false&libraries=geometry">
+    </script>-->
+	
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.12&client=gme-fleetmatics&sensor=false" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+      function initialize() {
+        var mapOptions = {
+          center: new google.maps.LatLng(37,-98),
+          zoom: 4,
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+		  mapTypeControl: false,
+		  panControl: false,
+		  zoomControl: false,
+		  scaleControl: true
+        };
+        map = new google.maps.Map(document.getElementById("map-canvas"),
+            mapOptions);
+			
+		m1 = new google.maps.Marker( { position: new google.maps.LatLng(38,-116), map: map, icon: 'http://maps.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png', draggable: true });
+		m2 = new google.maps.Marker( { position: new google.maps.LatLng(40,-80), map: map, icon: {  
+            path: google.maps.SymbolPath.CIRCLE,
+			fillColor: 'red',
+            fillOpacity: 1,
+            strokeWeight: 0,
+            scale: 8,
+			strokeColor: 'blue'
+         }, 
+		 draggable: true });	
+		p = new google.maps.Polyline( {
+			map: map,
+			path: [m1.getPosition(), m2.getPosition()],
+			strokeColor: 'purple'
+			});
+		var x=p.getPath();
+		google.maps.event.addListener(m1, 'position_changed', function() {
+			var x=p.getPath(); x.setAt(0, m1.getPosition()); p.setPath(x);
+			updateBoxes();
+		});
+		
+		google.maps.event.addListener(m2, 'position_changed', function() {
+			var x=p.getPath(); x.setAt(1, m2.getPosition()); p.setPath(x);
+			updateBoxes();
+		});
+		
+		document.getElementById('txtPrecision').addEventListener('keyup', updateBoxes);
+		updateBoxes();
+      }
+	  
+	function updateBoxes()
+	{
+		var nPrecision = parseInt(document.getElementById('txtPrecision').value);
+		if (isNaN(nPrecision)) 
+		{
+			nPrecision = 6;
+		}
+		if (nPrecision > 8) 
+		{ 
+			nPrecision = 8; 
+			document.getElementById('txtPrecision').value = nPrecision; 
+		}
+		var x=m1.getPosition().lng();
+		var y=m1.getPosition().lat();
+		document.getElementById('txtlat1').value = y.toFixed(nPrecision);
+		document.getElementById('txtlng1').value = x.toFixed(nPrecision);
+		document.getElementById('txtlatlng1').value = y.toFixed(nPrecision)+','+x.toFixed(nPrecision);
+		var bearing = google.maps.geometry.spherical.computeHeading(m1.getPosition(),m2.getPosition());
+		document.getElementById('txttheHeading').value = 
+			(bearing > 0 ? bearing : 360+bearing).toFixed(nPrecision);
+		document.getElementById('txttheDistance').value = 
+			((google.maps.geometry.spherical.computeDistanceBetween(
+				m1.getPosition(),m2.getPosition()))/1000).toFixed(nPrecision);
+	}
+	  
+	  function updateBoxes2()
+	  {
+	  alert('hi');
+	  alert('there');
+	  }
+	  
+	  
+      google.maps.event.addDomListener(window, 'load', initialize);
+	  
+	  function doEval()
+	  {
+		document.getElementById('txtresultOfEval').value = eval(document.getElementById('txtToEval').value);
+	  }
+    </script>
+  </head>
+  <body>
+  <div><h3>Road segment position and bearing calculator</h3>Drag the blue marker to update its position information below. Drag the red circle marker to calculate the bearing in degrees from the blue marker. Accuracy in decimal places may be set with the 'Precision' textbox.</div>
+    <div>
+		<div id="map-canvas"/>
+	</div>
+		
+	<div id="boxes">Blue marker lat,long: <input type="text" id="txtlatlng1" disabled=""/>
+		Lat: <input type="text" id="txtlat1" disabled=""/>
+		Long: <input type="text" id="txtlng1" disabled=""/>
+		Heading to red marker: <input type="text" id="txttheHeading" disabled=""/>
+		Distance (km): <input type="text" id="txttheDistance" disabled=""/>
+		Precision:&nbsp;<input type="text" id="txtPrecision" value="6" />
+	</div>
+	<div><span>Questions / suggestions? <a href="mailto:owen.oflaherty@fleetmatics.com">Owen O'Flaherty</a></span></div>
+	<!--<div id="boxes2"><input type="text" id="txtToEval" />
+		<input type="button" id="btnDoEval" onclick="doEval();"/>
+		<input type="text" id="txtresultOfEval" />
+	</div>-->	
+
+  </body>
+</html>
